@@ -24,7 +24,7 @@
 #include <unistd.h>
 
 /* Not declared in some stdlib.h files, so define here */
-float strtof(const char *nptr, char **endptr);
+float strtof(const char* nptr, char** endptr);
 
 /*************************
  * Configuration Constants
@@ -65,7 +65,7 @@ static int grade = 0;
 static int timeout_limit = TIMEOUT_LIMIT; /* -T */
 
 /* If non-NULL, test only one function (-f) */
-static char *test_fname = NULL;
+static char* test_fname = NULL;
 
 /* Special case when only use fixed argument(s) (-1, -2, or -3) */
 static int has_arg[3] = {0, 0, 0};
@@ -83,15 +83,14 @@ static int global_rating = 0;
  */
 typedef void handler_t(int);
 
-handler_t *Signal(int signum, handler_t *handler) {
+handler_t* Signal(int signum, handler_t* handler) {
   struct sigaction action, old_action;
 
   action.sa_handler = handler;
   sigemptyset(&action.sa_mask); /* block sigs of type being handled */
   action.sa_flags = SA_RESTART; /* restart syscalls if possible */
 
-  if (sigaction(signum, &action, &old_action) < 0)
-    perror("Signal error");
+  if (sigaction(signum, &action, &old_action) < 0) perror("Signal error");
   return (old_action.sa_handler);
 }
 
@@ -191,24 +190,20 @@ static int gen_vals(int test_vals[], int min, int max, int test_range,
 
   /* If the range is small enough, then do exhaustively */
   if (max - MAX_TEST_VALS <= min) {
-    for (i = min; i <= max; i++)
-      test_vals[test_count++] = i;
+    for (i = min; i <= max; i++) test_vals[test_count++] = i;
     return test_count;
   }
 
   /* Otherwise, need to sample.  Do so near the boundaries, around
      zero, and for some random cases. */
   for (i = 0; i < test_range; i++) {
-
     /* Test around the boundaries */
     test_vals[test_count++] = min + i;
     test_vals[test_count++] = max - i;
 
     /* If zero falls between min and max, then also test around zero */
-    if (i >= min && i <= max)
-      test_vals[test_count++] = i;
-    if (-i >= min && -i <= max)
-      test_vals[test_count++] = -i;
+    if (i >= min && i <= max) test_vals[test_count++] = i;
+    if (-i >= min && -i <= max) test_vals[test_count++] = -i;
 
     /* Random case between min and max */
     test_vals[test_count++] = random_val(min, max);
@@ -219,7 +214,7 @@ static int gen_vals(int test_vals[], int min, int max, int test_range,
 /*
  * test_0_arg - Test a function with zero arguments
  */
-static int test_0_arg(funct_t f, funct_t ft, char *name) {
+static int test_0_arg(funct_t f, funct_t ft, char* name) {
   int r = f();
   int rt = ft();
   int error = (r != rt);
@@ -235,7 +230,7 @@ static int test_0_arg(funct_t f, funct_t ft, char *name) {
 /*
  * test_1_arg - Test a function with one argument
  */
-static int test_1_arg(funct_t f, funct_t ft, int arg1, char *name) {
+static int test_1_arg(funct_t f, funct_t ft, int arg1, char* name) {
   funct1_t f1 = (funct1_t)f;
   funct1_t f1t = (funct1_t)ft;
   int r, rt, error;
@@ -244,9 +239,10 @@ static int test_1_arg(funct_t f, funct_t ft, int arg1, char *name) {
   rt = f1t(arg1);
   error = (r != rt);
   if (error && !grade)
-    printf("ERROR: Test %s(%d[0x%x]) failed...\n...Gives %d[0x%x]. Should be "
-           "%d[0x%x]\n",
-           name, arg1, arg1, r, r, rt, rt);
+    printf(
+        "ERROR: Test %s(%d[0x%x]) failed...\n...Gives %d[0x%x]. Should be "
+        "%d[0x%x]\n",
+        name, arg1, arg1, r, r, rt, rt);
 
   return error;
 }
@@ -254,7 +250,7 @@ static int test_1_arg(funct_t f, funct_t ft, int arg1, char *name) {
 /*
  * test_2_arg - Test a function with two arguments
  */
-static int test_2_arg(funct_t f, funct_t ft, int arg1, int arg2, char *name) {
+static int test_2_arg(funct_t f, funct_t ft, int arg1, int arg2, char* name) {
   funct2_t f2 = (funct2_t)f;
   funct2_t f2t = (funct2_t)ft;
   int r = f2(arg1, arg2);
@@ -262,9 +258,10 @@ static int test_2_arg(funct_t f, funct_t ft, int arg1, int arg2, char *name) {
   int error = (r != rt);
 
   if (error && !grade)
-    printf("ERROR: Test %s(%d[0x%x],%d[0x%x]) failed...\n...Gives %d[0x%x]. "
-           "Should be %d[0x%x]\n",
-           name, arg1, arg1, arg2, arg2, r, r, rt, rt);
+    printf(
+        "ERROR: Test %s(%d[0x%x],%d[0x%x]) failed...\n...Gives %d[0x%x]. "
+        "Should be %d[0x%x]\n",
+        name, arg1, arg1, arg2, arg2, r, r, rt, rt);
 
   return error;
 }
@@ -273,7 +270,7 @@ static int test_2_arg(funct_t f, funct_t ft, int arg1, int arg2, char *name) {
  * test_3_arg - Test a function with three arguments
  */
 static int test_3_arg(funct_t f, funct_t ft, int arg1, int arg2, int arg3,
-                      char *name) {
+                      char* name) {
   funct3_t f3 = (funct3_t)f;
   funct3_t f3t = (funct3_t)ft;
   int r = f3(arg1, arg2, arg3);
@@ -281,9 +278,10 @@ static int test_3_arg(funct_t f, funct_t ft, int arg1, int arg2, int arg3,
   int error = (r != rt);
 
   if (error && !grade)
-    printf("ERROR: Test %s(%d[0x%x],%d[0x%x],%d[0x%x]) failed...\n...Gives "
-           "%d[0x%x]. Should be %d[0x%x]\n",
-           name, arg1, arg1, arg2, arg2, arg3, arg3, r, r, rt, rt);
+    printf(
+        "ERROR: Test %s(%d[0x%x],%d[0x%x],%d[0x%x]) failed...\n...Gives "
+        "%d[0x%x]. Should be %d[0x%x]\n",
+        name, arg1, arg1, arg2, arg2, arg3, arg3, r, r, rt, rt);
 
   return error;
 }
@@ -324,12 +322,9 @@ static int test_function(test_ptr t) {
   }
 
   /* Sanity check on the ranges */
-  if (arg_test_range[0] < 1)
-    arg_test_range[0] = 1;
-  if (arg_test_range[1] < 1)
-    arg_test_range[1] = 1;
-  if (arg_test_range[2] < 1)
-    arg_test_range[2] = 1;
+  if (arg_test_range[0] < 1) arg_test_range[0] = 1;
+  if (arg_test_range[1] < 1) arg_test_range[1] = 1;
+  if (arg_test_range[2] < 1) arg_test_range[2] = 1;
 
   /* Create a test set for each argument */
   for (i = 0; i < args; i++) {
@@ -345,9 +340,10 @@ static int test_function(test_ptr t) {
     if (rc) {
       /* control will reach here if there is a timeout */
       errors = 1;
-      printf("ERROR: Test %s failed.\n  Timed out after %d secs (probably "
-             "infinite loop)\n",
-             t->name, timeout_limit);
+      printf(
+          "ERROR: Test %s failed.\n  Timed out after %d secs (probably "
+          "infinite loop)\n",
+          t->name, timeout_limit);
       return errors;
     }
     alarm(timeout_limit);
@@ -371,8 +367,7 @@ static int test_function(test_ptr t) {
                            arg_test_vals[0][a1], t->name);
 
       /* Stop testing if there is an error */
-      if (errors)
-        return errors;
+      if (errors) return errors;
     } else {
       /* if necessary, iterate over values for second argument */
       for (a2 = 0; a2 < test_counts[1]; a2++) {
@@ -382,8 +377,7 @@ static int test_function(test_ptr t) {
                          arg_test_vals[1][a2], t->name);
 
           /* Stop testing if there is an error */
-          if (errors)
-            return errors;
+          if (errors) return errors;
         } else {
           /* if necessary, iterate over vals for third arg */
           for (a3 = 0; a3 < test_counts[2]; a3++) {
@@ -392,8 +386,7 @@ static int test_function(test_ptr t) {
                                  arg_test_vals[2][a3], t->name);
 
             /* Stop testing if there is an error */
-            if (errors)
-              return errors;
+            if (errors) return errors;
           } /* a3 */
         }
       } /* a2 */
@@ -440,8 +433,8 @@ static int run_tests() {
 /*
  * get_num_val - Extract hex/decimal/or float value from string
  */
-static int get_num_val(char *sval, unsigned *valp) {
-  char *endp;
+static int get_num_val(char* sval, unsigned* valp) {
+  char* endp;
 
   /* See if it's an integer or floating point */
   int ishex = 0;
@@ -449,26 +442,25 @@ static int get_num_val(char *sval, unsigned *valp) {
   int i;
   for (i = 0; sval[i]; i++) {
     switch (sval[i]) {
-    case 'x':
-    case 'X':
-      ishex = 1;
-      break;
-    case 'e':
-    case 'E':
-      if (!ishex)
+      case 'x':
+      case 'X':
+        ishex = 1;
+        break;
+      case 'e':
+      case 'E':
+        if (!ishex) isfloat = 1;
+        break;
+      case '.':
         isfloat = 1;
-      break;
-    case '.':
-      isfloat = 1;
-      break;
-    default:
-      break;
+        break;
+      default:
+        break;
     }
   }
   if (isfloat) {
     float fval = strtof(sval, &endp);
     if (!*endp) {
-      *valp = *(unsigned *)&fval;
+      *valp = *(unsigned*)&fval;
       return 1;
     }
     return 0;
@@ -487,10 +479,11 @@ static int get_num_val(char *sval, unsigned *valp) {
 /*
  * usage - Display usage info
  */
-static void usage(char *cmd) {
-  printf("Usage: %s [-hg] [-r <n>] [-f <name> [-1|-2|-3 <val>]*] [-T <time "
-         "limit>]\n",
-         cmd);
+static void usage(char* cmd) {
+  printf(
+      "Usage: %s [-hg] [-r <n>] [-f <name> [-1|-2|-3 <val>]*] [-T <time "
+      "limit>]\n",
+      cmd);
   printf("  -1 <val>  Specify first function argument\n");
   printf("  -2 <val>  Specify second function argument\n");
   printf("  -3 <val>  Specify third function argument\n");
@@ -506,52 +499,50 @@ static void usage(char *cmd) {
  * Main routine
  **************/
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
   char c;
 
   /* parse command line args */
-  while ((c = getopt(argc, argv, "hgf:r:T:1:2:3:")) != -1)
-    switch (c) {
-    case 'h': /* help */
-      usage(argv[0]);
-      break;
-    case 'g': /* grading option for autograder */
-      grade = 1;
-      break;
-    case 'f': /* test only one function */
-      test_fname = strdup(optarg);
-      break;
-    case 'r': /* set global rating for each problem */
-      global_rating = atoi(optarg);
-      if (global_rating < 0)
+  while ((c = getopt(argc, argv, "hgf:r:T:1:2:3:")) != -1) switch (c) {
+      case 'h': /* help */
         usage(argv[0]);
-      break;
-    case '1': /* Get first argument */
-      has_arg[0] = get_num_val(optarg, &argval[0]);
-      if (!has_arg[0]) {
-        printf("Bad argument '%s'\n", optarg);
-        exit(0);
-      }
-      break;
-    case '2': /* Get first argument */
-      has_arg[1] = get_num_val(optarg, &argval[1]);
-      if (!has_arg[1]) {
-        printf("Bad argument '%s'\n", optarg);
-        exit(0);
-      }
-      break;
-    case '3': /* Get first argument */
-      has_arg[2] = get_num_val(optarg, &argval[2]);
-      if (!has_arg[2]) {
-        printf("Bad argument '%s'\n", optarg);
-        exit(0);
-      }
-      break;
-    case 'T': /* Set timeout limit */
-      timeout_limit = atoi(optarg);
-      break;
-    default:
-      usage(argv[0]);
+        break;
+      case 'g': /* grading option for autograder */
+        grade = 1;
+        break;
+      case 'f': /* test only one function */
+        test_fname = strdup(optarg);
+        break;
+      case 'r': /* set global rating for each problem */
+        global_rating = atoi(optarg);
+        if (global_rating < 0) usage(argv[0]);
+        break;
+      case '1': /* Get first argument */
+        has_arg[0] = get_num_val(optarg, &argval[0]);
+        if (!has_arg[0]) {
+          printf("Bad argument '%s'\n", optarg);
+          exit(0);
+        }
+        break;
+      case '2': /* Get first argument */
+        has_arg[1] = get_num_val(optarg, &argval[1]);
+        if (!has_arg[1]) {
+          printf("Bad argument '%s'\n", optarg);
+          exit(0);
+        }
+        break;
+      case '3': /* Get first argument */
+        has_arg[2] = get_num_val(optarg, &argval[2]);
+        if (!has_arg[2]) {
+          printf("Bad argument '%s'\n", optarg);
+          exit(0);
+        }
+        break;
+      case 'T': /* Set timeout limit */
+        timeout_limit = atoi(optarg);
+        break;
+      default:
+        usage(argv[0]);
     }
 
   if (timeout_limit > 0) {
